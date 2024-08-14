@@ -6,23 +6,7 @@ This project aims to develop a user-friendly, no-code interface for InfluxDB, si
 
 - Docker
 - Docker Compose
-
-## Project Structure
-
-```
-project-root/
-├── docker/
-│   └── docker-compose.yml
-├── src/
-│   ├── routes/
-│   ├── middleware/
-│   ├── queries/
-│   └── server.js
-├── Dockerfile
-├── package.json
-├── .env
-└── README.md
-```
+- Node.js and npm
 
 ## Getting Started
 
@@ -32,61 +16,44 @@ project-root/
    cd [your-repo-name]
    ```
 
-2. Start the application in the background:
+2. Start InfluxDB:
    ```
-   docker-compose -f docker/docker-compose.yml up -d --build
+   docker-compose -f docker/docker-compose.yml up -d
    ```
-   The `-d` flag runs the containers in detached mode (in the background).
 
-3. Access the application:
+3. Install Node.js dependencies:
+   ```
+   npm install
+   ```
+
+4. Start the Node.js server:
+   ```
+   npm run start
+   ```
+
+5. Access the application:
    - Backend API: http://localhost:3000
-   - InfluxDB UI: http://localhost:8086. Login using:
-
-    ```
-    Username: admin
-    Password: password123
-    ```
+   - InfluxDB UI: http://localhost:8086
+     Login using:
+     ```
+     Username: admin
+     Password: password123
+     ```
 
 ## Development
 
+- Use `npm run dev` instead of `npm run start` to run the server with nodemon for automatic restarts on file changes.
 - The Node.js backend code is in the `src` directory.
-- To make changes, edit the files in the `src` directory. The changes will be reflected immediately due to volume mounting and nodemon.
-
-### Adding New Packages
-
-To add a new package to the project:
-
-1. Stop the running containers:
-   ```
-   docker-compose -f docker/docker-compose.yml down
-   ```
-
-2. Install the new package:
-   ```
-   npm install <package-name>
-   ```
-
-3. Rebuild and restart the containers:
-   ```
-   docker-compose -f docker/docker-compose.yml up -d --build
-   ```
-
-This process ensures that the new package is properly installed in the Docker container.
-
-
-## Viewing Logs
-
-To view logs for the backend service:
-```
-docker-compose -f docker/docker-compose.yml logs -f backend
-```
+- To make changes, edit the files in the `src` directory.
 
 ## Stopping the Application
 
-To stop the application:
-```
-docker-compose -f docker/docker-compose.yml down
-```
+1. Stop the Node.js server by pressing `Ctrl+C` in the terminal where it's running.
+
+2. Stop InfluxDB:
+   ```
+   docker-compose -f docker/docker-compose.yml down
+   ```
 
 ## Contributing
 
@@ -160,4 +127,7 @@ docker-compose -f docker/docker-compose.yml down
 
 - The InfluxDB data is persisted in a Docker volume. To completely reset the database, you'll need to remove this volume.
 - For security in a production environment, never commit sensitive information like API keys or tokens to the repository. Always use environment variables for such data.
+
+
+
 
