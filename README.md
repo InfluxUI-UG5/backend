@@ -6,14 +6,13 @@ This project aims to develop a user-friendly, no-code interface for InfluxDB, si
 
 - Docker
 - Docker Compose
-- Node.js and npm
 
 ## Getting Started
 
 1. Clone the repository:
    ```
-   git clone [your-repo-url]
-   cd [your-repo-name]
+   git clone https://github.com/UoA-SEP24/backend/
+   cd backend
    ```
 
 2. Start InfluxDB:
