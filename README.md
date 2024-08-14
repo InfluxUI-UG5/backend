@@ -1,127 +1,163 @@
-# InfluxDB No-Code Solution Backend
+# InfluxDB No-Code Solution
 
-## Description
+This project aims to develop a user-friendly, no-code interface for InfluxDB, simplifying the process of querying and trending data for users without programming expertise.
 
-This repository contains the backend API for the InfluxDB No-Code Solution. It provides a Node.js Express server that interfaces with InfluxDB, handling queries and data management for the frontend application.
+## Prerequisites
 
-## Features
-
-- RESTful API for InfluxDB operations
-- Query parsing and execution
-- Data transformation for frontend consumption
-- Authentication and authorization
-- Integration with Grafana API
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js (v18 or later)
-- Docker (optional, for containerized development)
-- InfluxDB (v2.7)
-
-### Installation
-
-1. Clone the repository:
-   ```
-   git clone https://github.com/your-organization/influxdb-no-code-backend.git
-   cd influxdb-no-code-backend
-   ```
-
-2. Install dependencies:
-   ```
-   npm install
-   ```
-
-3. Set up environment variables:
-   Copy `.env.example` to `.env` and fill in the required variables:
-   ```
-   cp .env.example .env
-   ```
-
-4. Start the development server:
-   ```
-   npm run dev
-   ```
-
-The server will start on `http://localhost:3000` by default.
+- Docker
+- Docker Compose
 
 ## Project Structure
 
 ```
-backend/
+project-root/
+├── docker/
+│   └── docker-compose.yml
 ├── src/
-│   ├── config/
-│   ├── controllers/
-│   ├── middleware/
-│   ├── models/
 │   ├── routes/
-│   ├── services/
-│   ├── utils/
-│   └── app.js
-├── tests/
-├── .env
-├── .gitignore
-├── .eslintrc.js
-├── .prettierrc
-├── nodemon.json
+│   ├── middleware/
+│   ├── queries/
+│   └── server.js
+├── Dockerfile
 ├── package.json
+├── .env
 └── README.md
 ```
 
+## Getting Started
+
+1. Clone the repository:
+   ```
+   git clone [your-repo-url]
+   cd [your-repo-name]
+   ```
+
+2. Start the application in the background:
+   ```
+   docker-compose -f docker/docker-compose.yml up -d --build
+   ```
+   The `-d` flag runs the containers in detached mode (in the background).
+
+3. Access the application:
+   - Backend API: http://localhost:3000
+   - InfluxDB UI: http://localhost:8086. Login using:
+
+    ```
+    Username: admin
+    Password: password123
+    ```
+
 ## Development
 
-To start the development server with hot-reloading:
+- The Node.js backend code is in the `src` directory.
+- To make changes, edit the files in the `src` directory. The changes will be reflected immediately due to volume mounting and nodemon.
 
+### Adding New Packages
+
+To add a new package to the project:
+
+1. Stop the running containers:
+   ```
+   docker-compose -f docker/docker-compose.yml down
+   ```
+
+2. Install the new package:
+   ```
+   npm install <package-name>
+   ```
+
+3. Rebuild and restart the containers:
+   ```
+   docker-compose -f docker/docker-compose.yml up -d --build
+   ```
+
+This process ensures that the new package is properly installed in the Docker container.
+
+
+## Viewing Logs
+
+To view logs for the backend service:
 ```
-npm run dev
-```
-
-## Testing
-
-Run the test suite:
-
-```
-npm test
-```
-
-## Linting and Formatting
-
-To lint the code:
-
-```
-npm run lint
-```
-
-To automatically fix linting issues:
-
-```
-npm run lint:fix
-```
-
-To format the code:
-
-```
-npm run format
+docker-compose -f docker/docker-compose.yml logs -f backend
 ```
 
-## Docker
+## Stopping the Application
 
-A Dockerfile is provided for containerized development and deployment. To build and run the Docker image:
-
+To stop the application:
 ```
-docker build -t influxdb-no-code-backend .
-docker run -p 3000:3000 influxdb-no-code-backend
+docker-compose -f docker/docker-compose.yml down
 ```
-
-## API Documentation
-
-API documentation is available at `/api-docs` when the server is running.
 
 ## Contributing
 
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+### Adding New Queries
 
-## License
+1. Create a new file in `src/queries/` for your query. For example, `src/queries/getTemperature.js`:
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+   ```javascript
+   const getTemperature = `
+     from(bucket:"mybucket")
+       |> range(start: -1h)
+       |> filter(fn: (r) => r._measurement == "temperature")
+       |> yield(name: "mean")
+   `;
+
+   module.exports = getTemperature;
+   ```
+
+2. Import and use your query in the appropriate route file.
+
+### Adding New Routes
+
+1. Create a new file in `src/routes/` for your route. For example, `src/routes/temperature.js`:
+
+   ```javascript
+   const express = require('express');
+   const router = express.Router();
+   const { queryApi } = require('../influxdb');
+   const getTemperature = require('../queries/getTemperature');
+
+   router.get('/temperature', async (req, res) => {
+     try {
+       const result = await queryApi.collectRows(getTemperature);
+       res.json(result);
+     } catch (error) {
+       res.status(500).json({ error: error.message });
+     }
+   });
+
+   module.exports = router;
+   ```
+
+2. Import and use your route in `src/server.js`:
+
+   ```javascript
+   const temperatureRoutes = require('./routes/temperature');
+   app.use('/api', temperatureRoutes);
+   ```
+
+### Adding Middleware
+
+1. Create a new file in `src/middleware/` for your middleware. For example, `src/middleware/errorHandler.js`:
+
+   ```javascript
+   const errorHandler = (err, req, res, next) => {
+     console.error(err.stack);
+     res.status(500).json({ error: 'Something went wrong!' });
+   };
+
+   module.exports = errorHandler;
+   ```
+
+2. Use the middleware in `src/server.js`:
+
+   ```javascript
+   const errorHandler = require('./middleware/errorHandler');
+   app.use(errorHandler);
+   ```
+
+## Additional Information
+
+- The InfluxDB data is persisted in a Docker volume. To completely reset the database, you'll need to remove this volume.
+- For security in a production environment, never commit sensitive information like API keys or tokens to the repository. Always use environment variables for such data.
+
