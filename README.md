@@ -7,29 +7,12 @@ This project aims to develop a user-friendly, no-code interface for InfluxDB, si
 - Docker
 - Docker Compose
 
-## Project Structure
-
-```
-project-root/
-├── docker/
-│   └── docker-compose.yml
-├── src/
-│   ├── routes/
-│   ├── middleware/
-│   ├── queries/
-│   └── server.js
-├── Dockerfile
-├── package.json
-├── .env
-└── README.md
-```
-
 ## Getting Started
 
 1. Clone the repository:
    ```
-   git clone [your-repo-url]
-   cd [your-repo-name]
+   git clone https://github.com/UoA-SEP24/backend/
+   cd backend
    ```
 
 2. Start the application in the background:
